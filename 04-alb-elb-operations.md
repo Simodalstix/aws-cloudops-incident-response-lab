@@ -4,95 +4,87 @@ Focus: traffic routing, target health, service availability
 
 ---
 
-## load balancers
+## Load Balancers
 
-# list ALBs
-aws elbv2 describe-load-balancers
+    # list ALBs
+    aws elbv2 describe-load-balancers
 
-# specific ALB
-aws elbv2 describe-load-balancers \
-  --names my-alb
-
----
-
-## listeners
-
-# ports / protocols / rules
-# requires load balancer ARN (from describe-load-balancers)
-aws elbv2 describe-listeners \
-  --load-balancer-arn <alb-arn>
+    # specific ALB
+    aws elbv2 describe-load-balancers \
+      --names my-alb
 
 ---
 
-## target groups
+## Listeners
 
-# list target groups
-aws elbv2 describe-target-groups
-
-# specific target group
-aws elbv2 describe-target-groups \
-  --names my-tg
+    # ports / protocols / rules (requires ALB ARN)
+    aws elbv2 describe-listeners \
+      --load-balancer-arn <alb-arn>
 
 ---
 
-## target health (critical)
+## Target Groups
 
-# health status per target
-aws elbv2 describe-target-health \
-  --target-group-arn <tg-arn>
+    # list target groups
+    aws elbv2 describe-target-groups
 
-# states:
-# healthy → receiving traffic
-# unhealthy → failing checks
-# initial → warming up
-# unused → not registered
+    # specific target group
+    aws elbv2 describe-target-groups \
+      --names my-tg
 
 ---
 
-## registration
+## Target Health (critical)
 
-# add instance to target group
-aws elbv2 register-targets \
-  --target-group-arn <tg-arn> \
-  --targets Id=<instance-id>
+    # health per target (primary check when service is down)
+    aws elbv2 describe-target-health \
+      --target-group-arn <tg-arn>
 
-# remove instance from target group
-aws elbv2 deregister-targets \
-  --target-group-arn <tg-arn> \
-  --targets Id=<instance-id>
-
----
-
-## health check config
-
-# verify path / port / protocol
-aws elbv2 describe-target-groups \
-  --target-group-arns <tg-arn>
+states:
+    healthy     → receiving traffic
+    unhealthy   → failing checks
+    initial     → warming up
+    unused      → not registered
 
 ---
 
-## quick patterns
+## Registration
 
-service down:
-- check target-health first
-- unhealthy → EC2 issue
-- healthy → app / listener issue
+    # add instance to target group
+    aws elbv2 register-targets \
+      --target-group-arn <tg-arn> \
+      --targets Id=<instance-id>
 
-targets unhealthy:
-- app not running
-- wrong port
-- bad health check path
-- security group blocking ALB
-
-no traffic:
-- instance not registered
-- wrong target group
-- listener misconfigured
+    # remove instance
+    aws elbv2 deregister-targets \
+      --target-group-arn <tg-arn> \
+      --targets Id=<instance-id>
 
 ---
 
-## reminders
+## Health Check Config
 
-- ALB → target group → instance
-- health checks control traffic flow
-- "running instance" ≠ "serving traffic"
+    # verify health check path / port / protocol
+    aws elbv2 describe-target-groups \
+      --target-group-arns <tg-arn>
+
+---
+
+## Quick Flow
+
+    # service down?
+    # → check target health first
+
+    # unhealthy:
+    # → go EC2 (app / port / instance issue)
+
+    # healthy:
+    # → check listener rules / app logic
+
+---
+
+## Key Reminders
+
+    # ALB → target group → instance
+    # health checks control routing
+    # running instance != serving traffic
