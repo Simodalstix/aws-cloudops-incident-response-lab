@@ -22,7 +22,7 @@ Hands-on lab environment for building AWS operational skills using the CLI. Cove
 ```
 ├── architecture/          # Diagrams
 ├── docs/
-│   ├── cli-playbook/      # Reusable CLI command reference
+│   ├── cli-playbooks/      # Reusable CLI command reference
 │   └── scenarios/         # Structured troubleshooting exercises
 ```
 
